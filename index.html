@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>НМТ Історія України: Інтерактивний тренажер</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #f4ecdc;
+      color: #23372b;
+    }
+    .custom-shadow {
+      box-shadow: 0 10px 25px -5px rgba(43, 69, 54, 0.1), 0 8px 10px -6px rgba(43, 69, 54, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 sm:p-6 md:p-8">
+
+  <!-- Контейнер застосунку -->
+  <div class="max-w-3xl w-full mx-auto bg-white rounded-3xl border-2 border-[#2b4536] p-6 sm:p-8 custom-shadow transition-all">
+    
+    <!-- Шапка / Брендинг -->
+    <header class="flex flex-wrap items-center justify-between border-b border-[#e5dcce] pb-5 mb-6 gap-3">
+      <div class="flex items-center gap-2.5 bg-[#2b4536] text-white px-4 py-1.5 rounded-full shadow-sm">
+        <i class="fa-brands fa-instagram text-[#eab446]"></i>
+        <span class="text-sm font-extrabold tracking-wide">hist.viktoria</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-black uppercase text-[#943429] tracking-widest">Програма НМТ</span>
+        <span class="text-[#c4b69d]">•</span>
+        <span class="bg-[#f0e7d8] text-[#2b4536] text-xs font-bold px-2.5 py-1 rounded-lg">Тема 5</span>
+      </div>
+    </header>
+
+    <!-- Прогрес і статистика -->
+    <div class="flex items-center justify-between text-sm font-bold text-[#6d6153] mb-3">
+      <span id="question-counter">Запитання 1 з 15</span>
+      <span id="score-counter">Бали: 0</span>
+    </div>
+    <div class="w-full bg-[#eee5d5] rounded-full h-2.5 mb-6 overflow-hidden">
+      <div id="progress-bar" class="bg-[#df9f28] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <!-- Область тесту -->
+    <main id="quiz-area">
+      <!-- Текст запитання -->
+      <div class="mb-6">
+        <span id="question-type" class="inline-block text-xs font-bold text-[#84611d] bg-[#fbf2dd] border border-[#f1deba] px-3 py-1 rounded-md mb-2">
+          Завантаження...
+        </span>
+        <h2 id="question-text" class="text-lg sm:text-xl font-bold text-[#23372b] leading-relaxed">
+          Завантаження запитання...
+        </h2>
+      </div>
+
+      <!-- Варіанти відповідей -->
+      <div id="options-container" class="space-y-3 mb-6">
+        <!-- Кнопки варіантів генеруються через JS -->
+      </div>
+
+      <!-- Блок пояснення (спочатку прихований) -->
+      <div id="feedback-box" class="hidden p-4 rounded-2xl mb-6 border transition-all">
+        <div class="flex items-center gap-2 mb-1">
+          <i id="feedback-icon" class="fa-solid text-lg"></i>
+          <h4 id="feedback-title" class="font-extrabold text-sm uppercase tracking-wide"></h4>
+        </div>
+        <p id="feedback-text" class="text-sm leading-relaxed font-medium text-[#3b473e]"></p>
+      </div>
+
+      <!-- Кнопка «Наступне» -->
+      <div class="flex justify-end">
+        <button id="next-btn" class="hidden bg-[#2b4536] hover:bg-[#1d3126] text-white font-extrabold text-sm uppercase px-6 py-3 rounded-xl transition duration-200 flex items-center gap-2 shadow-md">
+          <span>Наступне запитання</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </main>
+
+    <!-- Фінальний екран результату (прихований) -->
+    <div id="result-screen" class="hidden text-center py-8">
+      <div class="w-20 h-20 bg-[#f4ecdc] text-[#2b4536] rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-[#df9f28] shadow-md">
+        <i class="fa-solid fa-award text-3xl text-[#df9f28]"></i>
+      </div>
+      <h3 class="text-2xl font-black text-[#23372b] uppercase mb-2">Тестування завершено!</h3>
+      <p id="final-score-text" class="text-base text-[#6d6153] font-semibold mb-6"></p>
+      <button id="restart-btn" class="bg-[#2b4536] hover:bg-[#1d3126] text-white font-black text-sm uppercase px-8 py-3.5 rounded-xl transition shadow-lg inline-flex items-center gap-2">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>Пройти ще раз</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Футер -->
+  <footer class="text-center text-xs font-semibold text-[#8b8072] mt-6">
+    Тренажер підготовки до НМТ з історії України • Тема 5: Литовсько-польська доба
+  </footer>
+
+  <script>
+    const questions = [
+      {
+        type: "Події XIV століття",
+        question: "Яка битва відбулася в 1362 році, внаслідок якої більшість українських земель були звільнені від золотоординського панування та увійшли до складу Великого князівства Литовського?",
+        options: [
+          "Битва на річці Калка",
+          "Битва на Синіх Водах",
+          "Грюнвальдська битва",
+          "Битва під Оршею"
+        ],
+        correct: 1,
+        explanation: "У 1362 році військо литовського князя Ольгерда розбило татар на річці Сині Води (Поділля). Це поклало край пануванню Золотої Орди на Київщині, Поділлі та Переяславщині."
+      },
+      {
+        type: "Унії та угоди",
+        question: "Яка унія, укладена в 1385 році, передбачала шлюб литовського князя Ягайла з польською королевою Ядвігою та об'єднання Великого князівства Литовського і Польського королівства?",
+        options: [
+          "Городельська",
+          "Кревська",
+          "Люблінська",
+          "Берестейська"
+        ],
+        correct: 1,
+        explanation: "Кревська унія 1385 року була династичним союзом. Ягайло зобов'язався прийняти католицтво, охрестити Литву і приєднати литовські та руські землі до Корони Польської."
+      },
+      {
+        type: "Політичний устрій",
+        question: "Який принцип щодо підкорених руських земель спочатку діяв у Великому князівстві Литовському?",
+        options: [
+          "«Старого не порушуємо, а нового не вводимо»",
+          "«Чия влада, того й віра»",
+          "«Розділяй і володарюй»",
+          "«Все для держави, нічого поза державою»"
+        ],
+        correct: 0,
+        explanation: "Литовські князі (Ольгерд та інші) на початковому етапі дотримувалися принципу «старовини не рушимо, новини не вводимо». Вони переймали руську мову, закони («Руську правду») та православну віру."
+      },
+      {
+        type: "Ліквідація уділів",
+        question: "У якому році було остаточно ліквідовано Київське удільне князівство та перетворено його на воєводство?",
+        options: [
+          "1385 р.",
+          "1435 р.",
+          "1452 р.",
+          "1471 р."
+        ],
+        correct: 3,
+        explanation: "У 1471 році, після смерті князя Семена Олельковича, Київське удільне князівство було ліквідовано урядом ВКЛ і перетворено на Київське воєводство на чолі з воєводою-католиком (Мартином Гаштовтом)."
+      },
+      {
+        type: "Міське самоврядування",
+        question: "Як називалося право міст на самоврядування, звільнення від управління та суду державних урядовців, що поширювалося в Україні з XIV ст.?",
+        options: [
+          "Копне право",
+          "Магдебурзьке право",
+          "Волоцьке право",
+          "Литовські статути"
+        ],
+        correct: 1,
+        explanation: "Магдебурзьке право — це право міст на самоврядування. Містом керував виборний магістрат (рада і лава) на чолі з війтом. Це сприяло розвитку ремесла і торгівлі."
+      },
+      {
+        type: "Крим і Південь",
+        question: "Хто став першим ханом і засновником незалежного Кримського ханства у 1441 році?",
+        options: [
+          "Менглі-Гірей",
+          "Хаджі-Гірей",
+          "Іслам-Гірей",
+          "Девлет-Гірей"
+        ],
+        correct: 1,
+        explanation: "У 1441 році за підтримки Великого князівства Литовського Хаджі-Гірей проголосив себе незалежним правителем Криму, відокремившись від Золотої Орди."
+      },
+      {
+        type: "Унії та угоди",
+        question: "Який документ 1413 року передбачав призначення на вищі державні посади у Великому князівстві Литовському лише феодалів-католиків?",
+        options: [
+          "Кревська унія",
+          "Городельська унія",
+          "Люблінська унія",
+          "Віленська угода"
+        ],
+        correct: 1,
+        explanation: "Городельська унія 1413 року підтвердила союз Литви і Польщі. Одним із її головних наслідків було надання привілеїв та вищих посад лише шляхті католицького віросповідання, що стало початком дискримінації православної руської знаті."
+      },
+      {
+        type: "Видатні діячі",
+        question: "Хто з українських князів здобув блискучу перемогу над московським військом під Оршею у 1514 році?",
+        options: [
+          "Свидригайло Ольгердович",
+          "Федір Коріятович",
+          "Костянтин Іванович Острозький",
+          "Михайло Глинський"
+        ],
+        correct: 2,
+        explanation: "Князь Костянтин Іванович Острозький, видатний полководець і Великий гетьман Литовський, 8 вересня 1514 року розгромив переважаюче московське військо у битві під Оршею."
+      },
+      {
+        type: "Поява козацтва",
+        question: "У якому році в писемних джерелах (хроніці Марціна Бєльського) вперше зустрічається згадка про українських козаків?",
+        options: [
+          "1471 р.",
+          "1489 р.",
+          "1492 р.",
+          "1514 р."
+        ],
+        correct: 1,
+        explanation: "Перша писемна згадка про українських козаків датується 1489 роком. У хроніці описується, як козаки були провідниками війська на Поділлі під час походу проти татар."
+      },
+      {
+        type: "Регіональна історія",
+        question: "У складі якої держави опинилася територія Закарпаття з другої половини XIII ст. і перебувала там до початку ХХ ст.?",
+        options: [
+          "Молдавського князівства",
+          "Великого князівства Литовського",
+          "Угорського королівства",
+          "Польського королівства"
+        ],
+        correct: 2,
+        explanation: "Закарпаття ще з другої половини XIII століття поступово було інкорпороване до складу Угорського королівства. Воно поділялося на комітати (жупи)."
+      },
+      {
+        type: "Регіональна історія",
+        question: "Як називалася українська територія (сучасна Буковина), що у XIV - першій половині XVI ст. перебувала у складі Молдавського князівства?",
+        options: [
+          "Покуття",
+          "Шипинська земля",
+          "Берладська земля",
+          "Червона Русь"
+        ],
+        correct: 1,
+        explanation: "У складі Молдавського князівства територія сучасної Північної Буковини мала назву Шипинська земля (згодом перетворена на Чернівецьку волость)."
+      },
+      {
+        type: "Громадянська війна ВКЛ",
+        question: "Яка битва 1435 року стала вирішальною у війні між Свидригайлом і Сигізмундом, завершившись поразкою Свидригайла («Великого князівства Руського»)?",
+        options: [
+          "Битва під Вількомиром",
+          "Битва на Синіх Водах",
+          "Грюнвальдська битва",
+          "Битва на Калці"
+        ],
+        correct: 0,
+        explanation: "У битві під Вількомиром (1435 р.) війська Свидригайла (якого підтримувала руська православна шляхта) зазнали нищівної поразки від військ Сигізмунда (якого підтримувала Литва і Польща)."
+      },
+      {
+        type: "Кримський півострів",
+        question: "Що сталося з генуезькими колоніями (Кафа, Судак, Чембало) та князівством Феодоро у Криму в 1475 році?",
+        options: [
+          "Вони увійшли до складу Великого князівства Литовського",
+          "Їх захопили турки-османи",
+          "Вони добровільно приєдналися до Кримського ханства",
+          "Їх знищили війська Золотої Орди"
+        ],
+        correct: 1,
+        explanation: "У 1475 році на територію Криму вторглася армія Османської імперії (турки). Вони захопили всі генуезькі колонії на узбережжі та знищили православне князівство Феодоро."
+      },
+      {
+        type: "Соціальна структура",
+        question: "Який стан населення в XIV-XVI ст. був найбільш привілейованим, мав право володіти землею і брав участь в управлінні державою?",
+        options: [
+          "Міщани (патриціат)",
+          "Духовенство",
+          "Шляхта",
+          "Козацтво"
+        ],
+        correct: 2,
+        explanation: "Шляхта — це панівний, привілейований стан у Польщі, Литві та на українських землях. Головним обов'язком шляхти була військова служба, за що вони отримували право володіти землею та селянами."
+      },
+      {
+        type: "Повстання",
+        question: "Хто очолив збройний виступ руської шляхти у 1508 році проти литовського панування, що завершився поразкою та еміграцією до Москви?",
+        options: [
+          "Свидригайло Ольгердович",
+          "Михайло Глинський",
+          "Федір Коріятович",
+          "Костянтин Острозький"
+        ],
+        correct: 1,
+        explanation: "У 1508 році відбувся заколот Михайла Глинського — могутнього руського магната. Він підняв повстання проти литовського уряду, але, не отримавши широкої підтримки, змушений був втекти до Московської держави."
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionCounter = document.getElementById("question-counter");
+    const scoreCounter = document.getElementById("score-counter");
+    const progressBar = document.getElementById("progress-bar");
+    const questionType = document.getElementById("question-type");
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const feedbackBox = document.getElementById("feedback-box");
+    const feedbackTitle = document.getElementById("feedback-title");
+    const feedbackIcon = document.getElementById("feedback-icon");
+    const feedbackText = document.getElementById("feedback-text");
+    const nextBtn = document.getElementById("next-btn");
+    const quizArea = document.getElementById("quiz-area");
+    const resultScreen = document.getElementById("result-screen");
+    const finalScoreText = document.getElementById("final-score-text");
+    const restartBtn = document.getElementById("restart-btn");
+
+    function renderQuestion() {
+      answered = false;
+      const q = questions[currentQuestionIndex];
+      
+      questionCounter.textContent = `Запитання ${currentQuestionIndex + 1} з ${questions.length}`;
+      scoreCounter.textContent = `Бали: ${score}`;
+      
+      // Анімація прогрес-бару
+      setTimeout(() => {
+        progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+      }, 50);
+      
+      questionType.textContent = q.type;
+      questionText.textContent = q.question;
+      
+      optionsContainer.innerHTML = "";
+      feedbackBox.className = "hidden p-4 rounded-2xl mb-6 border transition-all";
+      nextBtn.classList.add("hidden");
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left p-4 rounded-xl border-2 border-[#d9cebc] hover:border-[#2b4536] bg-[#faf6ef] hover:bg-white text-[#23372b] font-semibold text-sm transition-all duration-150 flex items-start gap-3";
+        btn.innerHTML = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#e5dcce] text-[#2b4536] font-bold text-xs shrink-0 mt-0.5">${['А', 'Б', 'В', 'Г'][idx]}</span><span class="leading-relaxed">${opt}</span>`;
+        btn.onclick = () => selectOption(idx);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectOption(selectedIndex) {
+      if (answered) return;
+      answered = true;
+      
+      const q = questions[currentQuestionIndex];
+      const buttons = optionsContainer.querySelectorAll("button");
+      
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.remove("hover:bg-white", "hover:border-[#2b4536]");
+        if (idx === q.correct) {
+          btn.classList.add("bg-[#e2f0e6]", "border-[#2b4536]", "text-[#1d3d28]");
+          btn.querySelector("span:first-child").className = "inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#2b4536] text-white font-bold text-xs shrink-0 mt-0.5";
+        } else if (idx === selectedIndex) {
+          btn.classList.add("bg-[#faede9]", "border-[#943429]", "text-[#943429]");
+          btn.querySelector("span:first-child").className = "inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#943429] text-white font-bold text-xs shrink-0 mt-0.5";
+        } else {
+          btn.classList.add("opacity-60");
+        }
+      });
+
+      feedbackBox.classList.remove("hidden");
+      if (selectedIndex === q.correct) {
+        score++;
+        scoreCounter.textContent = `Бали: ${score}`;
+        feedbackBox.classList.add("bg-[#eef7f0]", "border-[#b5d6be]");
+        feedbackTitle.textContent = "Правильно!";
+        feedbackTitle.className = "font-extrabold text-sm uppercase tracking-wide text-[#2b4536]";
+        feedbackIcon.className = "fa-solid fa-circle-check text-lg text-[#2b4536]";
+      } else {
+        feedbackBox.classList.add("bg-[#faf0ee]", "border-[#f2c2b8]");
+        feedbackTitle.textContent = "Неправильно!";
+        feedbackTitle.className = "font-extrabold text-sm uppercase tracking-wide text-[#943429]";
+        feedbackIcon.className = "fa-solid fa-circle-xmark text-lg text-[#943429]";
+      }
+
+      feedbackText.textContent = q.explanation;
+      nextBtn.classList.remove("hidden");
+    }
+
+    nextBtn.onclick = () => {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    };
+
+    function showResults() {
+      quizArea.classList.add("hidden");
+      resultScreen.classList.remove("hidden");
+      const percent = Math.round((score / questions.length) * 100);
+      
+      let message = "";
+      if (percent >= 90) message = "Блискуче! Литовсько-польська доба засвоєна на відмінно!";
+      else if (percent >= 70) message = "Хороший результат! Але варто ще раз повторити деякі події та дати.";
+      else message = "Гарна спроба! Рекомендую ще раз переглянути конспект з цієї теми.";
+
+      finalScoreText.innerHTML = `Ви набрали <strong class="text-[#2b4536] text-xl">${score} з ${questions.length}</strong> правильних відповідей (${percent}%).<br><br>${message}`;
+    }
+
+    restartBtn.onclick = () => {
+      score = 0;
+      currentQuestionIndex = 0;
+      resultScreen.classList.add("hidden");
+      quizArea.classList.remove("hidden");
+      progressBar.style.width = "0%";
+      renderQuestion();
+    };
+
+    // Запуск першого питання при завантаженні
+    renderQuestion();
+  </script>
+</body>
+</html>
